@@ -2,13 +2,13 @@ import { CommandInteraction } from "discord.js";
 import { Argument, ArgumentType, Command, CommandManager } from "../main";
 import { challenges, OnCoinflipAccept } from "./coinflip";
 
-CommandManager.instance.Register(new Command('accept', 'Accept various challanges', async(interaction: CommandInteraction) => {
+CommandManager.instance.Register(new Command('accept', 'Accept various challenges', async(interaction: CommandInteraction) => {
     var type = interaction.options.data.at(0);
     var money = interaction.options.data.at(1);
 
     if(challenges.find(c => c.guildId === parseInt(interaction.guild.id) && parseInt(c.target.id) === parseInt(interaction.user.id)) === undefined)
     {
-        await interaction.reply("That user didn't send any challenge to you.");
+        await interaction.reply({content: "That user didn't send any challenge to you.", ephemeral:true});
         return;
     }
     

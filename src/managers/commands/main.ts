@@ -16,11 +16,11 @@ export enum ArgumentType {
 
 export class Argument {
     public type: ArgumentType;
-    public name: String;
-    public description: String;
-    public required?: Boolean | true;
+    public name: string;
+    public description: string;
+    public required?: boolean | true;
 
-    constructor(type: ArgumentType, name: String, description: String, required?: Boolean | true)
+    constructor(type: ArgumentType, name: string, description: string, required?: boolean | true)
     {
         this.type = type;
         this.name = name;
@@ -30,12 +30,12 @@ export class Argument {
 }
 
 export class Command {
-    public name: String;
-    public description: String;
+    public name: string;
+    public description: string;
     public execute: Function;
     public options : Array<Argument>;
 
-    constructor(name: String, desc: String, func: Function, arg: Array<Argument>) {
+    constructor(name: string, desc: string, func: Function, arg: Array<Argument>) {
         this.name = name;
         this.description = desc;
         this.execute = func;
@@ -56,13 +56,13 @@ export class CommandManager {
         return CommandManager.#instance;
     }
     async Init(): Promise<void> {
-        const rest = new REST({ version: '10' }).setToken(process.env.TOKEN);
+        const rest = new REST({ version: '10' }).setToken(process.env.TOKEN!);
 
         try {
             for(let i = 0; i <25; i++)
                 console.log(' \n');
             
-            console.log('Started refreshing application (/) commands.');
+            // console.log('Started refreshing application (/) commands.');
             var files = fs.readdirSync('src/managers/commands/list');
 
             const importPromises = files.map(file => {
@@ -70,7 +70,7 @@ export class CommandManager {
             });
 
             await Promise.all(importPromises);
-            await rest.put(Routes.applicationGuildCommands(process.env.CLIENT_ID, process.env.GUILD_ID), { body: this.commands.map(({execute,...rest}) => rest)});
+            await rest.put(Routes.applicationGuildCommands(process.env.CLIENT_ID!, process.env.GUILD_ID!), { body: this.commands.map(({execute,...rest}) => rest)});
             
             CommandManager.instance.commands.forEach(cmd => {
                 client.on('interactionCreate', (interaction: Interaction) => {
@@ -79,7 +79,7 @@ export class CommandManager {
                             cmd.execute(interaction as CommandInteraction);
                 });
             });    
-            console.log('Successfully reloaded application (/) commands.');
+            // console.log('Successfully reloaded application (/) commands.');
         }
         catch (error) {
             console.error(error);

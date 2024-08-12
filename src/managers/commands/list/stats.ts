@@ -1,6 +1,6 @@
 import { CommandInteraction, Embed, EmbedBuilder } from "discord.js";
 import { Argument, ArgumentType, Command, CommandManager } from "../main";
-import { Database } from "../../database/user-cache";
+import { Database } from "../../database/manager";
 import { GetPercent } from "../../../utils/math";
 
 CommandManager.instance.Register(new Command('stats', 'See your statistics', async(interaction: CommandInteraction) => {

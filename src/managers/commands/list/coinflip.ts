@@ -1,7 +1,7 @@
 import { CommandInteraction, EmbedBuilder, escapeHeading, TextChannel, ThreadChannel, User } from "discord.js";
 import { Argument, ArgumentType, Command, CommandManager } from "../main";
 import db from "../../database/connection";
-import { Database } from "../../database/user-cache";
+import { Database } from "../../database/manager";
 import { GetPercent } from "../../../utils/math";
 
 // seconds
@@ -12,8 +12,7 @@ class Challenge {
     public target: User;
     public coins: number;
     public guildId: number;
-    public thread: ThreadChannel;
-    public started:Boolean = false;
+    public started:boolean = false;
 
     constructor(propose: User, target: User, money: number, guildId: number) {
         this.propose = propose;
@@ -27,7 +26,7 @@ class Challenge {
 export var challenges: Array<Challenge> = [];
 
 
-CommandManager.instance.Register(new Command('coinflip', 'Challange someone and earn coins', async (interaction: CommandInteraction) => {
+CommandManager.instance.Register(new Command('coinflip', 'challenge someone and earn coins', async (interaction: CommandInteraction) => {
     var user = interaction.options.data.at(0);
     var money = interaction.options.data.at(1);
 
@@ -46,7 +45,7 @@ CommandManager.instance.Register(new Command('coinflip', 'Challange someone and 
     if(money.value as number <= 0)
     {
         await interaction.reply({content: 'Invalid bet amount.', ephemeral: true});
-        return;
+        return; 
     }
 
     // else if()
@@ -100,76 +99,48 @@ CommandManager.instance.Register(new Command('coinflip', 'Challange someone and 
 
 export async function OnCoinflipAccept(interaction: CommandInteraction, chal: Challenge) {
     chal.started = true;
-    var threadName: string = `Coinflip between ${interaction.user.username} and ${chal.propose.username}`;
-    
-    (interaction.channel as TextChannel).threads.cache.forEach(item => item.delete());
+    const embed = new EmbedBuilder()
+    .setColor(0x0099FF)
+    .setTitle(`Reversing the coin...`)
+    .setImage('https://cdn.dribbble.com/users/12524477/screenshots/18860746/media/34c431d2ce3d5d9734c1b8ffac98a698.gif');
 
-    await (interaction.channel as TextChannel).threads.create({ name: threadName });
+    var message = await interaction.channel.send({content: `Coinflip between ${interaction.user} and ${chal.propose}`, embeds: [embed]});
 
-    try {
-        var thread: ThreadChannel = (interaction.channel as TextChannel).threads.cache.find(x => x.name === threadName);
-        // thread.
-        if(thread) {
-            const embed = new EmbedBuilder()
-                .setColor(0x0099FF)
-                .setTitle(`Reversing the coin...`)
-                .setImage('https://cdn.dribbble.com/users/12524477/screenshots/18860746/media/34c431d2ce3d5d9734c1b8ffac98a698.gif');
+    setTimeout(async() => {
+        let random = Math.random();
+        var winner: User, looser:User;
 
-            const message = await thread.send({embeds: [embed]});
-            try {
-                setTimeout(async() => {
-                    let random = Math.random();
-                    var winner: User, looser:User;
-
-                    if(random > 0 && random <= 0.5)
-                    {
-                        winner = chal.propose;    
-                        looser = chal.target;
-                    }
-                    else {
-                        winner = chal.target;
-                        looser = chal.propose;
-                    }
-                    message.edit({content: `${winner} won ${chal.coins} coins.`, embeds: []});
-                    
-                    var winnerData = await Database.instance.GetUser(winner.id);
-                    var looserData = await Database.instance.GetUser(looser.id);
-                    // test.coins = 9887742;
-                    winnerData.coins += chal.coins;
-                    looserData.coinflipLoss -= chal.coins;
-                    winnerData.totalCoinflips++;
-                    looserData.totalCoinflips++;     
-                                   
-                    const summary = new EmbedBuilder()
-                        .setColor(0x0099FF)
-                        .setTitle(`${thread.name}`) 
-                        .addFields(
-                            { name: '✔️ Winner', value: `${winner}`, inline:true },
-                            { name: '❌ Looser', value: `${looser}`, inline:true },
-                            
-                        )
-                        .setTimestamp()
-                        
-                    interaction.channel.send({embeds: [summary]});
-                    setTimeout(() => {
-                        thread.delete();
-                    }, 8000);
-                }, 5000);
-            } catch(err) {console.error(err)}
+        if(random > 0 && random <= 0.5)
+        {
+            winner = chal.propose;    
+            looser = chal.target;
         }
-    
-        chal.thread = thread;
+        else {
+            winner = chal.target;
+            looser = chal.propose;
+        }        
+        var winnerData = await Database.instance.GetUser(winner.id);
+        var looserData = await Database.instance.GetUser(looser.id);
+        winnerData.coins += chal.coins;
+        looserData.coins -= chal.coins;
+        winnerData.totalCoinflips++;
+        looserData.totalCoinflips++;     
+        winnerData.coinflipWins ++;
+        looserData.coinflipLoss++;               
 
-    
-        await interaction.reply(`<@${interaction.user.id}> accepted ${chal.propose}'s challange. Watch the coinflip: <#${thread.id}>`);    // show thread
-
-    } catch(err) {
-        console.error(err);
-        await interaction.reply('Failed to create thread for coinflip challenge. Cancelling it.');
-        challenges = challenges.splice(challenges.indexOf(chal), 1);
-        // challenges=challenges;
+        const summary = new EmbedBuilder()
+            .setColor(0x0099FF)
+            .setTitle(`Coinflip between ${interaction.user.username} and ${chal.propose.username}`) 
+            .addFields(
+                { name: '✔️ Winner (+' + chal.coins + ')', value: `${winner}`, inline:true },
+                { name: '❌ Looser (-' + chal.coins +')', value: `${looser}`, inline:true },
+                
+            )
+            .setTimestamp()
             
-    }
-    
-
+        message.edit({content: '', embeds: [summary]});
+        // setTimeout(() => {
+        //     thread.delete();
+        // }, 8000);
+    }, 5000);
 }
