@@ -87,7 +87,7 @@ export async function AcceptTTT(interaction: CommandInteraction)
     interaction.reply({ephemeral:true, content: `You accepted ${target}'s tic-tac-toe challenge for ${challenge.coins}.`});
 }
 
-client.on(Events.InteractionCreate, (interaction: Interaction) => {
+client.on(Events.InteractionCreate, async (interaction: Interaction) => {
     if(!interaction.isButton())
         return;
 
@@ -154,6 +154,25 @@ client.on(Events.InteractionCreate, (interaction: Interaction) => {
         DeleteChallenge(challenge, DeleteReason.ENDED);
         var winner: User = GetWinPattern(challenge.tabel, 'X') ? challenge.xUser : challenge.zeroUser; 
         interaction.reply(`🎉 Kaboom! We have a winner: ${winner} (**+${challenge.coins}** coins).`)
+    
+        var userData = await Database.instance.GetUser(challenge.propose.id);
+        var targetData = await Database.instance.GetUser(challenge.target.id);
+        if(userData.coins < challenge.coins)
+            interaction.reply(`${challenge.propose} doesn t have that amount of coins but still it will be charged.`);
+        
+        else if(targetData.coins < challenge.coins)
+            interaction.reply(`${challenge.target} doesn t have that amount of coins but still it will be charged.`);
+        
+        if(winner === challenge.propose)
+        {
+            userData.coins += challenge.coins;
+            targetData.coins -= challenge.coins;
+        }
+        else {
+            userData.coins -= challenge.coins;
+            targetData.coins += challenge.coins;        
+        }
+        
         setTimeout(async () => {
             // await challenge.message.delete();
         }, 2000);
