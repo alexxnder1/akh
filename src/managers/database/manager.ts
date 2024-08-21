@@ -53,9 +53,9 @@ export class Database {
         this.cache.users.forEach((user, id) => {
             db.query(`update users set ? where discordId=? and guildId=?`, [user, user.discordId, GuildManager.instance.data.guildId], (err, res)=>{
                 if(err) throw err;
-                console.log((res as ResultSetHeader));
-                if((res as ResultSetHeader).affectedRows !== 0)
-                    console.log(`[Cache] Updated ${res['affectedRows']} values for ${user.discordId} (${GuildManager.instance.reference.name}).`);
+                // console.log((res as ResultSetHeader));
+                // if((res as ResultSetHeader).affectedRows !== 0)
+                    // console.log(`[Cache] Updated ${res['affectedRows']} values for ${user.discordId} (${GuildManager.instance.reference.name}).`);
             });
         });
     }

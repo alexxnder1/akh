@@ -1,7 +1,7 @@
 import { CommandInteraction } from "discord.js";
 import { Argument, ArgumentType, Command, CommandManager } from "../main";
 import { OnCoinflipAccept } from "./coinflip";
-import { challenges } from "../../challenges/main";
+import { ChallengeManager } from "../../challenges/main";
 import { AcceptTTT } from "./tic-tac-toe";
 
 CommandManager.instance.Register(new Command('accept', 'Accept various challenges', async(interaction: CommandInteraction) => {
@@ -15,7 +15,7 @@ CommandManager.instance.Register(new Command('accept', 'Accept various challenge
     // }
     
     if(type.value === 'coinflip')   
-        OnCoinflipAccept(interaction, challenges.find(c=> c.target.id === interaction.user.id));
+        OnCoinflipAccept(interaction, ChallengeManager.instance.challenges.find(c=> c.target.id === interaction.user.id));
 
     else if(type.value === 'tictactoe')   
         AcceptTTT(interaction);

@@ -3,11 +3,8 @@ import { Argument, ArgumentType, Command, CommandManager } from "../main";
 import db from "../../database/connection";
 import { Database } from "../../database/manager";
 import { GetPercent } from "../../../utils/math";
-import { Challenge, challenges, IsUserInChallenge, IsUserProvokedBy } from "../../challenges/main";
+import { Challenge, ChallengeManager, EXPIRE_TIME, IsUserInChallenge, IsUserProvokedBy } from "../../challenges/main";
 import { Coinflip } from "../../challenges/coinflip";
-
-// seconds
-const EXPIRE_TIME: number = 17;
 
 CommandManager.instance.Register(new Command('coinflip', 'challenge someone and earn coins', async (interaction: CommandInteraction) => {
     var user = interaction.options.data.at(0);
@@ -16,7 +13,7 @@ CommandManager.instance.Register(new Command('coinflip', 'challenge someone and 
     if(user.user.id === interaction.user.id)
         return await interaction.reply({ephemeral: true, content: 'You cannot challenge yourself'});
 
-    if(IsUserProvokedBy(interaction.user.id, user.user.id, interaction.guild.id, Coinflip))
+    if(IsUserProvokedBy(user.user.id, interaction.user.id, interaction.guild.id, Coinflip))
         return await interaction.reply({content: `You already provoked <@${user.user.id}>` , ephemeral: true})
 
     if(IsUserInChallenge(user.user.id, interaction.guild.id, Coinflip))
@@ -46,7 +43,7 @@ CommandManager.instance.Register(new Command('coinflip', 'challenge someone and 
         var chal: Challenge = new Coinflip(interaction.user, user.user, money.value as number, interaction.guild.id);
         const embed= new EmbedBuilder()
             .setColor(0x5BDE1A)
-            .setTitle('Coinflip #' + challenges.indexOf(chal))
+            .setTitle('Coinflip #' + ChallengeManager.instance.challenges.indexOf(chal))
             .setDescription('   ')
             .addFields(
                 { name: 'Propose', value: `${chal.propose}\n`, inline:true },
@@ -67,25 +64,22 @@ CommandManager.instance.Register(new Command('coinflip', 'challenge someone and 
                 { name: '`Total Coinflips`', value: `${targetData.totalCoinflips}`, inline:true },
             )
             .setTimestamp()
-            .setFooter({text: `Expires at ${EXPIRE_TIME} seconds`})
+            .setFooter({text: `Expires in ${EXPIRE_TIME/1000} seconds`})
 
-        const msg = await interaction.channel.send({embeds:[embed]});
-        const eph = await interaction.reply({content: `You provoked **${user.user.username}** to a coinflip challeange for a bet of **${chal.coins}**!`, ephemeral: true});
-        setTimeout(() => {
-            eph.edit(`The challenge with ${chal.propose} has expired.`);
-            challenges.splice(challenges.indexOf(chal), 1);
-            msg.delete();
-        }, EXPIRE_TIME*1000);
+        chal.message = await interaction.channel.send({embeds:[embed]});
+        await interaction.reply({content: `You provoked **${user.user.username}** to a coinflip challeange for a bet of **${chal.coins}**!`, ephemeral: true});
     }
 
 }, [new Argument(ArgumentType.USER, "user", 'the user you want to get money from', true), new Argument(ArgumentType.INTEGER, "amount", 'amount of coins', true)]));
 
 export async function OnCoinflipAccept(interaction: CommandInteraction, chal: Challenge) {
     chal.started = true;
+    clearTimeout(chal.expireTimeout); 
+    
     const embed = new EmbedBuilder()
-    .setColor(0x0099FF)
-    .setTitle(`Reversing the coin...`)
-    .setImage('https://cdn.dribbble.com/users/12524477/screenshots/18860746/media/34c431d2ce3d5d9734c1b8ffac98a698.gif');
+        .setColor(0x0099FF)
+        .setTitle(`Reversing the coin...`)
+        .setImage('https://cdn.dribbble.com/users/12524477/screenshots/18860746/media/34c431d2ce3d5d9734c1b8ffac98a698.gif');
 
     var message = await interaction.channel.send({content: `Coinflip between ${interaction.user} and ${chal.propose}`, embeds: [embed]});
 
@@ -122,8 +116,5 @@ export async function OnCoinflipAccept(interaction: CommandInteraction, chal: Ch
             .setTimestamp()
             
         message.edit({content: '', embeds: [summary]});
-        // setTimeout(() => {
-        //     thread.delete();
-        // }, 8000);
     }, 5000);
 }
