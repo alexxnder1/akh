@@ -38,31 +38,50 @@ export class Database {
         this.intervals = [];
 
         if(force) {
-            this.Test();
+            this.UpdateCacheForAllUsersToDb();
             console.log('forced');
         }
         else {
             var int: NodeJS.Timeout = setInterval(() => {
-                this.Test();
+                this.UpdateCacheForAllUsersToDb();
             }, parseInt(process.env.UPDATE_CACHE_TO_DB!));
             this.intervals.push(int);
-            
-            console.log('not forced');
-        }
-
-        
+        }        
     }
 
-    public Test() {
+    public UpdateCacheForAllUsersToDb() {
         this.cache.users.forEach((user, id) => {
-            console.log(user.coins);
             db.query(`update users set ? where discordId=? and guildId=?`, [user, user.discordId, GuildManager.instance.data.guildId], (err, res)=>{
                 if(err) throw err;
-                console.log(`update users set ? where discordId=? and guildId=?`, [user, user.discordId, GuildManager.instance.data.guildId]);
+                console.log((res as ResultSetHeader));
                 if((res as ResultSetHeader).affectedRows !== 0)
                     console.log(`[Cache] Updated ${res['affectedRows']} values for ${user.discordId} (${GuildManager.instance.reference.name}).`);
-            }) ;
+            });
         });
+    }
+
+    public async UpdateCacheFromDb(discordId: string) {
+        var userData: UserDb = await this.GetUser(discordId);
+        if(userData)
+        {
+            db.query('select * from users where discordId=?', [discordId], async(err, res) => {
+                if(err)
+                    throw err;
+                
+                let result : ResultSetHeader = res[0] as ResultSetHeader;
+                if(!result)
+                {
+                    console.error('Cannot get user from db.');
+                    return;
+                }
+
+                else {
+                    userData = (res[0] as ResultSetHeader) as unknown as UserDb;
+                    console.log(`Cache updated from db for ${discordId}`);
+                }
+            })
+        }
+        else throw new Error(`An error occurred creating cache for user ${discordId}.`);
     }
 
     public RemoveCache(discord_id: string) {

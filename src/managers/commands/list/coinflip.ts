@@ -3,28 +3,11 @@ import { Argument, ArgumentType, Command, CommandManager } from "../main";
 import db from "../../database/connection";
 import { Database } from "../../database/manager";
 import { GetPercent } from "../../../utils/math";
+import { Challenge, challenges, IsUserInChallenge, IsUserProvokedBy } from "../../challenges/main";
+import { Coinflip } from "../../challenges/coinflip";
 
 // seconds
 const EXPIRE_TIME: number = 17;
-
-class Challenge {
-    public propose: User;
-    public target: User;
-    public coins: number;
-    public guildId: number;
-    public started:boolean = false;
-
-    constructor(propose: User, target: User, money: number, guildId: number) {
-        this.propose = propose;
-        this.target =target;
-        this.coins = money;
-        this.guildId = guildId;
-        challenges.push(this);
-    }
-}
-
-export var challenges: Array<Challenge> = [];
-
 
 CommandManager.instance.Register(new Command('coinflip', 'challenge someone and earn coins', async (interaction: CommandInteraction) => {
     var user = interaction.options.data.at(0);
@@ -33,10 +16,10 @@ CommandManager.instance.Register(new Command('coinflip', 'challenge someone and 
     if(user.user.id === interaction.user.id)
         return await interaction.reply({ephemeral: true, content: 'You cannot challenge yourself'});
 
-    if(challenges.find(v => v.propose.id === interaction.user.id && v.target.id === user.user.id))
+    if(IsUserProvokedBy(interaction.user.id, user.user.id, interaction.guild.id, Coinflip))
         return await interaction.reply({content: `You already provoked <@${user.user.id}>` , ephemeral: true})
 
-    if(challenges.find(v => parseInt(v.target.id) === parseInt(user.user.id) || parseInt(v.propose.id) === parseInt(user.user.id))?.started)
+    if(IsUserInChallenge(user.user.id, interaction.guild.id, Coinflip))
     {
         await interaction.reply({content: 'User is already in a challenge', ephemeral: true});
         return;
@@ -60,7 +43,7 @@ CommandManager.instance.Register(new Command('coinflip', 'challenge someone and 
         if(targetData.coins < (money.value as number))
             return await interaction.reply({content: "User <@" + targetData.discordId + "> doesnt have that amount of coins.", ephemeral: true});
 
-        var chal: Challenge = new Challenge(interaction.user, user.user, money.value as number, parseInt(interaction.guild.id));
+        var chal: Challenge = new Coinflip(interaction.user, user.user, money.value as number, interaction.guild.id);
         const embed= new EmbedBuilder()
             .setColor(0x5BDE1A)
             .setTitle('Coinflip #' + challenges.indexOf(chal))

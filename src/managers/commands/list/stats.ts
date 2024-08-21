@@ -2,10 +2,11 @@ import { CommandInteraction, Embed, EmbedBuilder } from "discord.js";
 import { Argument, ArgumentType, Command, CommandManager } from "../main";
 import { Database } from "../../database/manager";
 import { GetPercent } from "../../../utils/math";
+import { challenges } from "../../challenges/main";
 
 CommandManager.instance.Register(new Command('stats', 'See your statistics', async(interaction: CommandInteraction) => {
     const data = await Database.instance.GetUser(interaction.user.id);
-
+    console.log(challenges);
     const embed = new EmbedBuilder()
         .setColor(0x0099FF)
         .setTitle('Your statistics')

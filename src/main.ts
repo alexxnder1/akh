@@ -20,3 +20,4 @@ client.login(process.env.TOKEN!);
 
 import './managers/database/connection';
 import './managers/events/main'
+import './managers/challenges/main';
