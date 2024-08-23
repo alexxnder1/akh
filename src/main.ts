@@ -2,7 +2,12 @@ import {Client, GatewayIntentBits, Interaction} from "discord.js";
 import env from 'dotenv'
 env.config();
 
-export const client: Client = new Client({intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildPresences, GatewayIntentBits.GuildMembers]});
+export const client: Client = new Client({intents: [
+        GatewayIntentBits.Guilds,
+        GatewayIntentBits.GuildPresences,
+        GatewayIntentBits.GuildVoiceStates,
+        GatewayIntentBits.GuildMembers
+     ]});
 
 import { Command, CommandManager } from "./managers/commands/main";
 
@@ -21,3 +26,4 @@ client.login(process.env.TOKEN!);
 import './managers/database/connection';
 import './managers/events/main'
 import './managers/challenges/main';
+import './managers/music/main';

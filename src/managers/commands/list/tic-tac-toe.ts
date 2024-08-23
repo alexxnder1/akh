@@ -71,7 +71,7 @@ export async function AcceptTTT(interaction: CommandInteraction)
         {
             row.addComponents(
                 new ButtonBuilder()
-                    .setCustomId(`${i}, ${j}`)
+                    .setCustomId(`ttt_${i}, ${j}`)
                     .setLabel('-')
                     .setStyle(ButtonStyle.Primary)
             )
@@ -94,6 +94,9 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
     if(!interaction.message)
         return;
     
+    if(!interaction.customId.startsWith(`ttt_`))
+        return;
+
     var challenge = ChallengeManager.instance.challenges.find(c => c.message.id === (interaction as any).message.id) as TicTacToe;
     if(GetUserInChallenge(interaction.user.id, interaction.guild.id, TicTacToe) != challenge)
         return interaction.reply({content: 'You are not in that challenge.', ephemeral: true});    
@@ -131,7 +134,7 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
             else label = '-';
             row.addComponents(
                 new ButtonBuilder()
-                    .setCustomId(`${i}, ${j}`)
+                    .setCustomId(`ttt_${i}, ${j}`)
                     .setLabel(label)
                     .setStyle(btn)
             )

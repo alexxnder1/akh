@@ -43,6 +43,8 @@ export class Command {
     }
 }
 
+export var rest: REST = null;
+
 export class CommandManager {
     commands: Array<Command> = [];
     static #instance: CommandManager = null;
@@ -56,7 +58,7 @@ export class CommandManager {
         return CommandManager.#instance;
     }
     async Init(): Promise<void> {
-        const rest = new REST({ version: '10' }).setToken(process.env.TOKEN!);
+        rest = new REST({ version: '10' }).setToken(process.env.TOKEN!);
 
         try {
             for(let i = 0; i <25; i++)

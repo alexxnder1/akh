@@ -1,4 +1,4 @@
-import { Guild,  GuildMember } from "discord.js";
+import { Guild,  GuildMember, UserBannerFormat } from "discord.js";
 import { client } from "../../main";
 import db from "./connection";
 import { UserDb } from "./tabels/users";
@@ -59,6 +59,30 @@ export class Database {
             });
         });
     }
+
+    public async GetTopRank(guildId: string): Promise<Array<UserDb>> {
+         return await new Promise<Array<UserDb>>((resolve, reject) => {
+            db.query('select * from users where guildId=? ORDER BY coins DESC', [guildId], (err, res) => {
+                if (err) reject(err);
+                if (res[0] as ResultSetHeader)
+                    resolve(res as RowDataPacket as Array<UserDb>);
+            })
+         }) 
+    }
+    public async GetRank(guildId: string, id: string): Promise<number> {
+        return await new Promise<number>((resolve, reject) => {
+            db.query('select * from users where guildId=? ORDER BY coins DESC', [guildId], (err, res) => {
+                if (err) reject(err);
+               if (res[0] as ResultSetHeader)
+                {
+                    (res as RowDataPacket[] as Array<UserDb>).forEach((user: UserDb, index: number) => {
+                        if(user.discordId === id)
+                            resolve(index+1);
+                    }); 
+                }   
+           })
+        }) 
+   }
 
     public async UpdateCacheFromDb(discordId: string) {
         var userData: UserDb = await this.GetUser(discordId);
