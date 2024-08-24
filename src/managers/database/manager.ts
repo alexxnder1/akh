@@ -1,4 +1,4 @@
-import { Guild,  GuildMember, UserBannerFormat } from "discord.js";
+import { DefaultWebSocketManagerOptions, Guild,  GuildMember, User, UserBannerFormat } from "discord.js";
 import { client } from "../../main";
 import db from "./connection";
 import { UserDb } from "./tabels/users";
@@ -51,7 +51,7 @@ export class Database {
 
     public UpdateCacheForAllUsersToDb() {
         this.cache.users.forEach((user, id) => {
-            db.query(`update users set ? where discordId=? and guildId=?`, [user, user.discordId, GuildManager.instance.data.guildId], (err, res)=>{
+            db.query(`update users set ? where discordId=?`, [user, user.discordId], (err, res)=>{
                 if(err) throw err;
                 // console.log((res as ResultSetHeader));
                 // if((res as ResultSetHeader).affectedRows !== 0)
@@ -115,9 +115,40 @@ export class Database {
             console.log('Removed cache for user ' + discord_id);
         }
         else console.log(`Cannot remove cache for ${discord_id}.`);
-
+    }
+    
+    public async DeleteUser(discord_id: string) {
+        db.query('delete from users where discordId=?', [discord_id] ,(err, res) => {
+            if(err)
+            {
+                console.error(err);
+                return;
+            }
+            
+            this.RemoveCache(discord_id);
+            console.log('Deleted user ' + discord_id);
+        })
     }
 
+    public async UpdateUser(user: UserDb) {
+        db.query('update users set ? where discordId=?', [user, user.discordId], (err, res) => {
+            if(err)
+            {
+                console.error(err);
+                return;
+            }
+
+            console.log(`[Query] Updated ${user.discordId}'s properties.`);
+        })
+    }
+
+    public async GetGuildMemberById(discord_id: string): Promise<User> {
+        return new Promise<User>((resolve, reject) => {
+            client.users.fetch(discord_id).then((user) => {
+                resolve(user);
+            });
+        }); 
+    }
 
     public async GetUser(discord_id: string, guild_id: string=process.env.DEBUG_GUILD_ID!): Promise<UserDb> {
         const results = await new Promise<RowDataPacket[]>((resolve, reject) => {
@@ -128,8 +159,10 @@ export class Database {
         });
 
         if (results.length === 0) {
-            await new Promise<ResultSetHeader>((resolve, reject) => {
-                db.query('insert into users (discordId, guildId) values (?, ?)', [discord_id, guild_id], (err, res) => {
+            await new Promise<ResultSetHeader>(async (resolve, reject) => {
+                var user = await this.GetGuildMemberById(discord_id);
+                console.log(user);
+                db.query('insert into users (discordId, guildId, avatar, name) values (?, ?, ?, ?)', [discord_id, guild_id, user.displayAvatarURL(), user.username], (err, res) => {
                     if (err) return reject(err);
                     console.log(`[DB] ${discord_id} (guild_id ${guild_id}) is not registered in database, I'm adding it.`);
                     resolve(res as ResultSetHeader); // Explicitly casting to OkPacket
@@ -159,7 +192,7 @@ export class Database {
                             // userDb.totalCoinflips = res[0].totalCoinflips;
                             // userDb.winRate = res[0].winRate;
                             userDb = res[0] as UserDb;
-                            
+                                                        
                             console.log(`[DB Cache] Cache created for user ${discord_id}.`);
                             this.cache.users.push(userDb);
                             resolve(userDb);       

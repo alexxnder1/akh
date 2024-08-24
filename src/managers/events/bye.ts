@@ -2,12 +2,15 @@ import { GuildManager } from "./main";
 import { client } from "../../main";
 import {  EmbedBuilder, GuildMember } from "discord.js";
 import { DOOR_LEAVE } from "../../utils/emojis";
+import { Database } from "../database/manager";
+import { DELETE_ACCOUNT_AFTER_LEFT_MS } from "../database/tabels/users";
 
 client.on('guildMemberRemove', async(member: GuildMember) => {
     Leave(member);
 });
 
 async function Leave(member: GuildMember)
+// const 
 {
     console.log(`${member.user.username} has left the server.`);
 
@@ -18,5 +21,10 @@ async function Leave(member: GuildMember)
         .setThumbnail(`${member.user.displayAvatarURL()}`)
         .setTimestamp()
     ;
-    (await GuildManager.instance.GetChannel(GuildManager.instance.data.memberLeaveChannel)).send({embeds: [embed]});
+    
+    (await GuildManager.instance.GetChannel(GuildManager.instance.guilds.find(g => g.guildId === member.guild.id).memberLeaveChannel)).send({embeds: [embed]});
+    
+    const user = await Database.instance.GetUser(member.user.id);
+    user.deleteTimestamp = (Date.now() + DELETE_ACCOUNT_AFTER_LEFT_MS).toString();
+    await Database.instance.UpdateUser(user);
 }
