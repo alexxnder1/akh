@@ -212,13 +212,6 @@ export class Database {
                         if(res[0] !== undefined)
                         {
                             var userDb = new UserDb();
-                            // userDb.discordId = parseInt(discord_id);
-                            // userDb.coinflipLoss = res[0].coinflipLoss;
-                            // userDb.coinflipWins = res[0].coinflipWins;
-                            // userDb.coins = res[0].coins;
-                            // userDb.lossRate = res[0].lossRate;
-                            // userDb.totalCoinflips = res[0].totalCoinflips;
-                            // userDb.winRate = res[0].winRate;
                             userDb = res[0] as UserDb;
                                                         
                             console.log(`[DB Cache] Cache created for user ${discord_id}.`);

@@ -7,12 +7,14 @@ export class Log {
     public type: LogType;
     public content: string;
     public guildId: string;
+    public authorId: string;
     public channelId: string;
-    constructor(type: LogType, content: string, channelId: string, guildId: string) {
+    constructor(type: LogType, content: string, channelId: string, guildId: string, authorId: string) {
         this.type = type;
         this.content = content;
         this.channelId = channelId;
         this.guildId = guildId;
+        this.authorId = authorId;
     }
 }
 
@@ -29,7 +31,7 @@ export class LogManager {
     }
 
     public InsertLog(log: Log) {
-        db.query('insert into logs (type, content, channelId, guildId) values (?,?,?, ?)', [log.type, log.content, log.channelId, log.guildId], (err, res) => {
+        db.query('insert into logs (type, content, channelId, guildId, authorId) values (?,?,?, ?,?)', [log.type, log.content, log.channelId, log.guildId, log.authorId], (err, res) => {
             if(err)
             {
                 console.error(err);
@@ -39,4 +41,4 @@ export class LogManager {
         console.log(`[Log] ${log.content}`);
     }
 }
-import './manager';
+import './messageCreate';

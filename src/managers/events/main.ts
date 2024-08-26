@@ -139,7 +139,7 @@ client.on('ready', async() => {
     console.log(GuildManager.instance.guilds);
 });
 
-import './user/bye';
+import './user/guildMemberLeave';
 import './hello';
 import './guild/checkDeletion'; 
 import'./guild/guildDelete';
