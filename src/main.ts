@@ -6,7 +6,10 @@ export const client: Client = new Client({intents: [
         GatewayIntentBits.Guilds,
         GatewayIntentBits.GuildPresences,
         GatewayIntentBits.GuildVoiceStates,
-        GatewayIntentBits.GuildMembers
+        GatewayIntentBits.GuildMembers,
+        GatewayIntentBits.GuildMessages,
+
+        GatewayIntentBits.MessageContent
      ]});
 
 import { Command, CommandManager } from "./managers/commands/main";
@@ -27,3 +30,5 @@ import './managers/database/connection';
 import './managers/events/main'
 import './managers/challenges/main';
 import './managers/music/main';
+
+import './managers/logs/main';

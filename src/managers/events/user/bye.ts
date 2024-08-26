@@ -1,17 +1,19 @@
-import { GuildManager } from "./main";
-import { client } from "../../main";
+import { GuildManager } from "../main";
+import { client } from "../../../main";
 import {  EmbedBuilder, GuildMember } from "discord.js";
-import { DOOR_LEAVE } from "../../utils/emojis";
-import { Database } from "../database/manager";
-import { DELETE_ACCOUNT_AFTER_LEFT_MS } from "../database/tabels/users";
+import { DOOR_LEAVE } from "../../../utils/emojis";
+import { Database } from "../../database/manager";
+import { DELETE_ACCOUNT_AFTER_LEFT_MS } from "../../database/tabels/users";
 
 client.on('guildMemberRemove', async(member: GuildMember) => {
     Leave(member);
 });
 
 async function Leave(member: GuildMember)
-// const 
 {
+    if(member.user.id === client.user.id)
+        return;
+    
     console.log(`${member.user.username} has left the server.`);
 
     const embed = new EmbedBuilder()

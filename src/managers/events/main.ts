@@ -5,6 +5,9 @@ import { Database } from '../database/manager';
 import { Events, Guild, GuildMember, GuildMemberEditOptions, TextChannel } from 'discord.js';
 import { client } from '../../main';
 
+export const DEFAULT_ICON_FOR_SERVER = 'https://icons.veryicon.com/png/o/miscellaneous/open-ncloud/the-server-4.png';
+export const DEFAULT_BANNER_FOR_NULL = 'https://cdn.prod.website-files.com/5f9072399b2640f14d6a2bf4/6348685d7c7b4e693020de8c_macro%20hero-blog%20header%402x-p-1600.png';
+
 export class GuildManager {
     public guilds: Array<GuildDb> = [];
     static #instance: GuildManager = null;
@@ -52,11 +55,25 @@ export class GuildManager {
 
             else guildResult = new GuildDb(guild.id, guild.iconURL(), guild.name, guild.ownerId);
             
+            guildResult.bannerURL = guild.bannerURL() !== null ? guild.bannerURL() : DEFAULT_BANNER_FOR_NULL;
             const channels = await guild.channels.fetch();
             channels.forEach((channel) => {
                 guildResult.textChannels.push(new Channel(channel.name, channel.id));
             });
             
+            // resolve();
+            guild.members.cache.forEach((member) => {
+                // if not exists
+                if(!member.user.bot)
+                    Database.instance.CreateUser(member.user.id, guild.id);
+            });
+            db.query('update guilds set ? where guildId=?', [{image: guildResult.image ? guildResult.image : DEFAULT_ICON_FOR_SERVER, ownerId: guildResult.ownerId, bannerURL: guildResult.bannerURL, name: guildResult.name, textChannels: JSON.stringify(guildResult.textChannels)},  guildResult.guildId], (err, res) =>{
+                if(err)
+                {
+                    console.error(err);
+                    return;
+                }
+            })
             GuildManager.instance.guilds.push(guildResult);
 
             const exists: boolean = await new Promise<boolean>((resolve, reject) => {
@@ -75,19 +92,8 @@ export class GuildManager {
                 })
             }) 
 
-            if(exists)
-            {
-                db.query('update guilds set ? where guildId=?', [{image: guildResult.image, ownerId: guildResult.ownerId, name: guildResult.name, textChannels: JSON.stringify(guildResult.textChannels)},  guildResult.guildId], (err, res) =>{
-                    if(err)
-                    {
-                        console.error(err);
-                        return;
-                    }
-                })
-                resolve();
-            }
-            else {
-                db.query('insert into guilds (ownerId, guildId, image, name, textChannels, joinDate) values (?, ?, ?, ?, ?)', [guildResult.ownerId,guildResult.guildId, guildResult.image,  guildResult.name,  JSON.stringify(guildResult.textChannels), guildResult.joinDate], (err, res) =>{
+            if(!exists) {
+                db.query('insert into guilds (ownerId, guildId, image, name, textChannels, joinDate, bannerURL) values (?, ?, ?, ?, ?, ?, ?)', [guildResult.ownerId,guildResult.guildId, guildResult.image ? guildResult.image : 'https://icons.veryicon.com/png/o/miscellaneous/open-ncloud/the-server-4.png',  guildResult.name,  JSON.stringify(guildResult.textChannels), guildResult.joinDate, guildResult.bannerURL], (err, res) =>{
                     if(err)
                     {
                         console.error(err);
@@ -103,6 +109,14 @@ export class GuildManager {
 client.on('ready', async() => {
     client.guilds.cache.forEach(async (guild) => {
         GuildManager.instance.AddGuild(guild);
+        
+        const members = await guild.members.fetch();
+        members.forEach((member) => {
+            // if not exists
+            if(!member.user.bot)
+                Database.instance.CreateUser(member.user.id, guild.id);
+        });
+
         // guilds.forEach(async(guild )=> {
         //     console.log(guild);
         // })
@@ -125,8 +139,11 @@ client.on('ready', async() => {
     console.log(GuildManager.instance.guilds);
 });
 
-import './bye';
+import './user/bye';
 import './hello';
-import './checkDeletion'; 
-import './member-edit';
-import './guildUpdate';
+import './guild/checkDeletion'; 
+import'./guild/guildDelete';
+import './guild/guildUpdate';
+import './user/guildMemberRemove';
+import './user/guildMemberUpdate';
+import './guild/guildCreate';

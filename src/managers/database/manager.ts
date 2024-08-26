@@ -114,7 +114,6 @@ export class Database {
             this.cache.users.splice(user, 1);
             console.log('Removed cache for user ' + discord_id);
         }
-        else console.log(`Cannot remove cache for ${discord_id}.`);
     }
     
     public async DeleteUser(discord_id: string) {
@@ -142,6 +141,33 @@ export class Database {
         })
     }
 
+    public async DeleteGuildInfo(guild_id: string) {
+        console.log('delete guild info ' + guild_id);
+        this.cache.users.forEach(u => {
+            if(u.discordId === guild_id)
+                this.RemoveCache(u.discordId);
+            
+        })
+        db.query('delete from users where guildId=?', [guild_id], (err, res) => {
+            if(err)
+            {
+                console.log(err);
+                return;
+            }
+
+            // console.log(res);
+            // this.RemoveCache(res)
+        })
+        db.query('delete from guilds where guildId=?', [guild_id], (err, res) => {
+            if(err)
+            {
+                console.log(err);
+                return;
+            }
+        })
+
+    }
+
     public async GetGuildMemberById(discord_id: string): Promise<User> {
         return new Promise<User>((resolve, reject) => {
             client.users.fetch(discord_id).then((user) => {
@@ -149,8 +175,7 @@ export class Database {
             });
         }); 
     }
-
-    public async GetUser(discord_id: string, guild_id: string=process.env.DEBUG_GUILD_ID!): Promise<UserDb> {
+    public async CreateUser(discord_id: string, guild_id: string=process.env.DEBUG_GUILD_ID!): Promise<void> {
         const results = await new Promise<RowDataPacket[]>((resolve, reject) => {
             db.query('select discordId from users where discordId=? AND guildId=?', [discord_id, guild_id], (err, res) => {
                 if (err) return reject(err);
@@ -169,6 +194,9 @@ export class Database {
                 });
             });
         }
+    }
+    public async GetUser(discord_id: string, guild_id: string=process.env.DEBUG_GUILD_ID!): Promise<UserDb> {
+        await this.CreateUser(discord_id, guild_id);
         
         try {
             var user = this.cache.users.find(d => discord_id === d.discordId);

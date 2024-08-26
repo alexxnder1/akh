@@ -1,9 +1,9 @@
-import { GuildManager } from "./main";
-import { client } from "../../main";
 import {  CommandInteraction, EmbedBuilder, GuildMember } from "discord.js";
-import { WAVING_HAND } from "../../utils/emojis";
-import { Database } from "../database/manager";
-import { Command, CommandManager } from "../commands/main";
+import { Database } from "../../database/manager";
+import { Command, CommandManager } from "../../commands/main";
+import { WAVING_HAND } from "../../../utils/emojis";
+import { client } from "../../../main";
+import { GuildManager } from "../main";
 
 client.on('guildMemberAdd', async(member: GuildMember) => {
     Wave(member);

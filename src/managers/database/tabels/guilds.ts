@@ -19,6 +19,7 @@ export class GuildDb {
     public name:string;
     public ownerId: string;
     public joinDate: string;
+    public bannerURL: string | null;
     public textChannels: Array<Channel> = [];
     public memberJoinChannel: string;
     public memberLeaveChannel: string;

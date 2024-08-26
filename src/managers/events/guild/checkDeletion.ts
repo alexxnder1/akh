@@ -1,7 +1,7 @@
-import { client } from "../../main";
-import db from "../database/connection";
-import { Database } from "../database/manager";
-import { DELETE_ACCOUNT_AFTER_LEFT_MS, UserDb } from "../database/tabels/users";
+import { client } from "../../../main";
+import db from "../../database/connection";
+import { Database } from "../../database/manager";
+import { DELETE_ACCOUNT_AFTER_LEFT_MS, UserDb } from "../../database/tabels/users";
 
 export const UPDATE_CHECK_DELETION = 3600*1000;
 
