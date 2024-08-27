@@ -7,7 +7,8 @@ export class UserDb {
     public coinflipLoss: number;
     public discordId: string; 
     public avatar: string;
-    public name: string;   
+    public name: string;  
+     
     // when user leaves guild this thing has a value
     public deleteTimestamp: string | 'null';
 }
