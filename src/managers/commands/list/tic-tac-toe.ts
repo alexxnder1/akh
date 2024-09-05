@@ -1,5 +1,6 @@
+import {  Argument, ArgumentType, Command } from "../../database/tabels/commands";
+import { CommandManager } from "../main";
 import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, Embed, EmbedBuilder, escapeHeading, Events, Interaction, User } from "discord.js";
-import { Argument, ArgumentType, Command, CommandManager } from "../main";
 import { ChallengeManager, CountChallangesOfType as CountChallengesOfType, DeleteChallenge, DeleteReason, EXPIRE_TIME, GetUserInChallenge, IsUserInChallenge, IsUserProvokedBy } from "../../challenges/main";
 import { Database } from "../../database/manager";
 import { client } from "../../../main";

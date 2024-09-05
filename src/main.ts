@@ -12,8 +12,6 @@ export const client: Client = new Client({intents: [
         GatewayIntentBits.MessageContent
      ]});
 
-import { Command, CommandManager } from "./managers/commands/main";
-
 client.on('ready', () => {
     console.log(`[BOT] Ready.`);    
     
@@ -22,6 +20,7 @@ client.on('ready', () => {
 
 });
 
+import { CommandManager } from "./managers/commands/main";
 CommandManager.instance.Init();
 
 client.login(process.env.TOKEN!);

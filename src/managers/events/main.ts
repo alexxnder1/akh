@@ -140,7 +140,7 @@ client.on('ready', async() => {
 });
 
 import './user/guildMemberLeave';
-import './hello';
+
 import './guild/checkDeletion'; 
 import'./guild/guildDelete';
 import './guild/guildUpdate';

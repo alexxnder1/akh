@@ -1,9 +1,10 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, CommandInteraction, Embed, EmbedBuilder, Events, Message, REST, StringSelectMenuBuilder, User } from "discord.js";
-import { Argument, ArgumentType, Command, CommandManager, rest } from "../main";
 import { Database } from "../../database/manager";
 import { GetPercent } from "../../../utils/math";
 import axios from "axios";
 import { client } from "../../../main";
+import {  Argument, ArgumentType, Command } from "../../database/tabels/commands";
+import { CommandManager } from "../main";
 
 export class ImageQueryResult {
     public link: string;

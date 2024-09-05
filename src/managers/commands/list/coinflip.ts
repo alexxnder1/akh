@@ -1,5 +1,6 @@
 import { CommandInteraction, EmbedBuilder, escapeHeading, TextChannel, ThreadChannel, User } from "discord.js";
-import { Argument, ArgumentType, Command, CommandManager } from "../main";
+import {  Argument, ArgumentType, Command } from "../../database/tabels/commands";
+import { CommandManager } from "../main";
 import db from "../../database/connection";
 import { Database } from "../../database/manager";
 import { GetPercent } from "../../../utils/math";

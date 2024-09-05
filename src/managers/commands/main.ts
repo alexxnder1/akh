@@ -1,47 +1,9 @@
 import { CommandInteraction, Interaction, REST, Routes } from "discord.js";
 import fs, { promises } from 'fs';
 import { client } from "../../main";
-
-export enum ArgumentType {
-    STRING = 3,
-    INTEGER = 4,
-    BOOLEAN = 5,
-    USER =6,
-    CHANNEL =7,
-    ROLE = 8,
-    MENTIONABLE = 9,
-    NUMBER = 10,
-    ATTACHMENT = 11
-}
-
-export class Argument {
-    public type: ArgumentType;
-    public name: string;
-    public description: string;
-    public required?: boolean | true;
-
-    constructor(type: ArgumentType, name: string, description: string, required?: boolean | true)
-    {
-        this.type = type;
-        this.name = name;
-        this.description = description;
-        this.required = required;
-    }
-}
-
-export class Command {
-    public name: string;
-    public description: string;
-    public execute: Function;
-    public options : Array<Argument>;
-
-    constructor(name: string, desc: string, func: Function, arg: Array<Argument>) {
-        this.name = name;
-        this.description = desc;
-        this.execute = func;
-        this.options = arg;
-    }
-}
+import { Database } from "../database/manager";
+import db from "../database/connection";
+import { Command } from "../database/tabels/commands";
 
 export var rest: REST = null;
 
@@ -81,7 +43,17 @@ export class CommandManager {
                             cmd.execute(interaction as CommandInteraction);
                 });
             });    
-            // console.log('Successfully reloaded application (/) commands.');
+            db.query('delete from commands', (err, _) => {
+                if(err)
+                    console.error(err);
+
+                CommandManager.instance.commands.forEach(cmd => {
+                    db.query('insert into commands (name,description,options) values(?,?,?)', [cmd.name, cmd.description, JSON.stringify(cmd.options)], (err, res) => {
+                        if(err)
+                            console.error(err);
+                    })
+                });
+            });
         }
         catch (error) {
             console.error(error);

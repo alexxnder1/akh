@@ -1,8 +1,9 @@
 import { CommandInteraction, Embed, EmbedBuilder } from "discord.js";
-import { Argument, ArgumentType, Command, CommandManager } from "../main";
 import { Database } from "../../database/manager";
 import { GetPercent } from "../../../utils/math";
 import { Challenge, ChallengeManager, DeleteChallenge, DeleteReason, GetUserInChallenge, IsUserInChallenge } from "../../challenges/main";
+import { CommandManager } from "../main";
+import { Argument, ArgumentType, Command } from "../../database/tabels/commands";
 
 CommandManager.instance.Register(new Command('cancel', 'cancel a challenge', async(interaction: CommandInteraction) => {
     var challenge = GetUserInChallenge(interaction.user.id, interaction.guild.id, Challenge);

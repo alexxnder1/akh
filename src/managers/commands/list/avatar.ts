@@ -1,6 +1,7 @@
 import { CommandInteraction, EmbedBuilder, User } from "discord.js";
-import { Argument, ArgumentType, Command, CommandManager } from "../main";
 import { client } from "../../../main";
+import { CommandManager } from "../main";
+import { Argument, ArgumentType, Command } from "../../database/tabels/commands";
 
 CommandManager.instance.Register(new Command('avatar', 'Show avatar for users', async(interaction: CommandInteraction) => {
     var user: User;

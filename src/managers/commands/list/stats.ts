@@ -1,7 +1,8 @@
 import { CommandInteraction, Embed, EmbedBuilder } from "discord.js";
-import { Argument, ArgumentType, Command, CommandManager } from "../main";
 import { Database } from "../../database/manager";
 import { GetPercent } from "../../../utils/math";
+import { Command } from "../../database/tabels/commands";
+import { CommandManager } from "../main";
 
 CommandManager.instance.Register(new Command('stats', 'See your statistics', async(interaction: CommandInteraction) => {
     const data = await Database.instance.GetUser(interaction.user.id);

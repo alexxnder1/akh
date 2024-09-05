@@ -15,5 +15,4 @@ db.connect((err) => {
 
 export default db;
 
-import './userAutoRegistration';
 import './manager';

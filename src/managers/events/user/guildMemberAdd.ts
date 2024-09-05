@@ -1,6 +1,5 @@
 import {  CommandInteraction, EmbedBuilder, GuildMember } from "discord.js";
 import { Database } from "../../database/manager";
-import { Command, CommandManager } from "../../commands/main";
 import { WAVING_HAND } from "../../../utils/emojis";
 import { client } from "../../../main";
 import { GuildManager } from "../main";
@@ -26,8 +25,3 @@ async function Wave(member: GuildMember)
     data.deleteTimestamp = 'null';
     await Database.instance.UpdateUser(data);
 }
-
-
-CommandManager.instance.Register(new Command('debug', 'See your statistics', async(interaction: CommandInteraction) => {
-    await Wave(interaction.member as GuildMember);
-}, []));

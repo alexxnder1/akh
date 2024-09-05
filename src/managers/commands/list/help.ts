@@ -1,8 +1,8 @@
 import { CommandInteraction, Embed, EmbedBuilder } from "discord.js";
-import { Argument, ArgumentType, Command, CommandManager } from "../main";
 import { Database } from "../../database/manager";
 import { GetPercent } from "../../../utils/math";
-
+import {  Argument, ArgumentType, Command } from "../../database/tabels/commands";
+import { CommandManager } from "../main";
 CommandManager.instance.Register(new Command('help', 'See all commands', async(interaction: CommandInteraction) => {   
     var string: string = '';
     

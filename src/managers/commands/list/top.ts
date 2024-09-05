@@ -1,5 +1,6 @@
 import { CommandInteraction, EmbedBuilder } from "discord.js";
-import { Argument, ArgumentType, Command, CommandManager } from "../main";
+import {  Argument, ArgumentType, Command } from "../../database/tabels/commands";
+import { CommandManager } from "../main";
 import { Database } from "../../database/manager";
 import { UserDb } from "../../database/tabels/users";
 

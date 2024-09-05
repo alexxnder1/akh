@@ -1,8 +1,11 @@
+
+import {  Argument, ArgumentType, Command } from "../../database/tabels/commands";
+import { CommandManager } from "../main";
 import { CommandInteraction } from "discord.js";
-import { Argument, ArgumentType, Command, CommandManager } from "../main";
 import { OnCoinflipAccept } from "./coinflip";
 import { ChallengeManager } from "../../challenges/main";
 import { AcceptTTT } from "./tic-tac-toe";
+
 
 CommandManager.instance.Register(new Command('accept', 'Accept various challenges', async(interaction: CommandInteraction) => {
     var type = interaction.options.data.at(0);

@@ -1,7 +1,7 @@
 import { CommandInteraction, User } from "discord.js";
-import { Argument, ArgumentType, Command, CommandManager } from "../main";
 import { Database } from "../../database/manager";
-
+import {  Argument, ArgumentType, Command } from "../../database/tabels/commands";
+import { CommandManager } from "../main";
 CommandManager.instance.Register(new Command('forcecache', 'force cache to be updated from db', async(interaction: CommandInteraction) => {
     await interaction.deferReply();
     try {
