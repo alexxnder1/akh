@@ -3,6 +3,7 @@ import db from "../connection";
 import { Database } from "../manager";
 import { client } from "../../../main";
 import { Guild, TextChannel } from "discord.js";
+import { GuildManager } from "../../events/main";
 
 export class Channel {
     public name: string; 
@@ -34,5 +35,11 @@ export class GuildDb {
 
         this.name = name;
     }
-    // public guild
+    
+    public async GetMembers() {
+        return ((await client.guilds.cache.get(this.guildId).members.fetch()).filter((g => !g.user.bot)));
+    }
+    public async GetBots() {
+        return ((await client.guilds.cache.get(this.guildId).members.fetch()).filter((g => g.user.bot)));
+    }
 }

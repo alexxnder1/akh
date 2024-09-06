@@ -31,3 +31,4 @@ import './managers/challenges/main';
 import './managers/music/main';
 
 import './managers/logs/main';
+import './managers/charts/main';

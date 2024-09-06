@@ -2,8 +2,9 @@ import { Channel, GuildDb } from '../database/tabels/guilds';
 import { ResultSetHeader, RowDataPacket } from 'mysql2';
 import db from '../database/connection';
 import { Database } from '../database/manager';
-import { Events, Guild, GuildMember, GuildMemberEditOptions, TextChannel } from 'discord.js';
+import { Guild, GuildMember, GuildMemberEditOptions, TextChannel } from 'discord.js';
 import { client } from '../../main';
+import { EventManager, Events } from './emitter';
 
 export const DEFAULT_ICON_FOR_SERVER = 'https://icons.veryicon.com/png/o/miscellaneous/open-ncloud/the-server-4.png';
 export const DEFAULT_BANNER_FOR_NULL = 'https://cdn.prod.website-files.com/5f9072399b2640f14d6a2bf4/6348685d7c7b4e693020de8c_macro%20hero-blog%20header%402x-p-1600.png';
@@ -11,7 +12,7 @@ export const DEFAULT_BANNER_FOR_NULL = 'https://cdn.prod.website-files.com/5f907
 export class GuildManager {
     public guilds: Array<GuildDb> = [];
     static #instance: GuildManager = null;
-    private constructor() {}
+    private constructor() { }
     public static get instance(): GuildManager {
         if(!GuildManager.#instance)
             GuildManager.#instance = new GuildManager();
@@ -67,9 +68,11 @@ export class GuildManager {
                 if(!member.user.bot)
                     Database.instance.CreateUser(member.user.id, guild.id);
             });
+            
             db.query('update guilds set ? where guildId=?', [{image: guildResult.image ? guildResult.image : DEFAULT_ICON_FOR_SERVER, ownerId: guildResult.ownerId, bannerURL: guildResult.bannerURL, name: guildResult.name, textChannels: JSON.stringify(guildResult.textChannels)},  guildResult.guildId], (err, res) =>{
                 if(err)
                 {
+                    reject();
                     console.error(err);
                     return;
                 }
@@ -97,30 +100,35 @@ export class GuildManager {
                     if(err)
                     {
                         console.error(err);
+                        reject();
                         return;
                     }
                 })  
                 resolve();
+                return;
             } 
+            resolve();
+
         });
     }
 }
 
 client.on('ready', async() => {
-    client.guilds.cache.forEach(async (guild) => {
-        GuildManager.instance.AddGuild(guild);
-        
-        const members = await guild.members.fetch();
-        members.forEach((member) => {
-            // if not exists
-            if(!member.user.bot)
-                Database.instance.CreateUser(member.user.id, guild.id);
-        });
-
-        // guilds.forEach(async(guild )=> {
-        //     console.log(guild);
-        // })
-    });
+    try {
+        for(const guild of client.guilds.cache.values()) {
+            await GuildManager.instance.AddGuild(guild);
+            
+            const members = await guild.members.fetch();
+            members.forEach((member) => {
+                // if not exists
+                if(!member.user.bot)
+                    Database.instance.CreateUser(member.user.id, guild.id);
+            }); 
+        }
+        EventManager.instance.RegisterEmitter(Events.GuildManagerValidate);
+    } catch(err) {
+        console.error(err);
+    }
     // for(const guild of guilds.values())
 
     // guilds.forEach(async(guild) => {
@@ -136,7 +144,7 @@ client.on('ready', async() => {
     //     });
        
     // })
-    console.log(GuildManager.instance.guilds);
+    // console.log(GuildManager.instance.guilds);
 });
 
 import './user/guildMemberLeave';

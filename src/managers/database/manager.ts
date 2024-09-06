@@ -17,7 +17,9 @@ export class Database {
 
     public cache: DatabaseCache = null;
 
-    private constructor() {}
+    private constructor() {
+
+    }
 
     public static get instance(): Database {
         if(!Database.#instance)
@@ -186,7 +188,6 @@ export class Database {
         if (results.length === 0) {
             await new Promise<ResultSetHeader>(async (resolve, reject) => {
                 var user = await this.GetGuildMemberById(discord_id);
-                console.log(user);
                 db.query('insert into users (discordId, guildId, avatar, name) values (?, ?, ?, ?)', [discord_id, guild_id, user.displayAvatarURL(), user.username], (err, res) => {
                     if (err) return reject(err);
                     console.log(`[DB] ${discord_id} (guild_id ${guild_id}) is not registered in database, I'm adding it.`);

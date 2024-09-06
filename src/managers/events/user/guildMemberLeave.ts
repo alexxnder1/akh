@@ -1,12 +1,14 @@
 import { GuildManager } from "../main";
 import { client } from "../../../main";
-import {  EmbedBuilder, GuildMember } from "discord.js";
+import {  EmbedBuilder, Events, GuildMember } from "discord.js";
 import { DOOR_LEAVE } from "../../../utils/emojis";
 import { Database } from "../../database/manager";
 import { DELETE_ACCOUNT_AFTER_LEFT_MS } from "../../database/tabels/users";
 
 client.on('guildMemberRemove', async(member: GuildMember) => {
     Leave(member);
+    if(member.user.id === client.user.id)
+        Database.instance.DeleteGuildInfo(member.guild.id);
 });
 
 async function Leave(member: GuildMember)
