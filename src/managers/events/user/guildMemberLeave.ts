@@ -28,7 +28,7 @@ async function Leave(member: GuildMember)
     
     (await GuildManager.instance.GetChannel(GuildManager.instance.guilds.find(g => g.guildId === member.guild.id).memberLeaveChannel)).send({embeds: [embed]});
     
-    const user = await Database.instance.GetUser(member.user.id);
+    const user = await Database.instance.GetUserData(member.user.id);
     user.deleteTimestamp = (Date.now() + DELETE_ACCOUNT_AFTER_LEFT_MS).toString();
     await Database.instance.UpdateUser(user);
 }

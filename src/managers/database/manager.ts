@@ -53,13 +53,24 @@ export class Database {
 
     public UpdateCacheForAllUsersToDb() {
         this.cache.users.forEach((user, id) => {
+            delete user['id'];
             db.query(`update users set ? where discordId=?`, [user, user.discordId], (err, res)=>{
                 if(err) throw err;
-                // console.log((res as ResultSetHeader));
-                // if((res as ResultSetHeader).affectedRows !== 0)
-                    // console.log(`[Cache] Updated ${res['affectedRows']} values for ${user.discordId} (${GuildManager.instance.reference.name}).`);
+                console.log((res as ResultSetHeader));
+                if((res as ResultSetHeader).affectedRows !== 0)
+                    console.log(`[Cache] Updated ${res['affectedRows']} values for ${user.discordId}).`);
             });
         });
+    }
+
+    public async UpdateUserDetails(user: User) {
+        db.query(`update users set ? where discordId=?`, [{name: user.username, avatar: user.displayAvatarURL()}, user.id], (err, ) => {
+            if(err)
+            {
+                console.error(err);
+                return;
+            }
+        })
     }
 
     public async GetTopRank(guildId: string): Promise<Array<UserDb>> {
@@ -87,7 +98,7 @@ export class Database {
    }
 
     public async UpdateCacheFromDb(discordId: string) {
-        var userData: UserDb = await this.GetUser(discordId);
+        var userData: UserDb = await this.GetUserData(discordId);
         if(userData)
         {
             db.query('select * from users where discordId=?', [discordId], async(err, res) => {
@@ -132,6 +143,7 @@ export class Database {
     }
 
     public async UpdateUser(user: UserDb) {
+        delete user['id'];
         db.query('update users set ? where discordId=?', [user, user.discordId], (err, res) => {
             if(err)
             {
@@ -177,27 +189,29 @@ export class Database {
             });
         }); 
     }
-    public async CreateUser(discord_id: string, guild_id: string=process.env.DEBUG_GUILD_ID!): Promise<void> {
+    public async SetupUser(discord_id: string, guild_id: string=process.env.DEBUG_GUILD_ID!): Promise<void> {
         const results = await new Promise<RowDataPacket[]>((resolve, reject) => {
             db.query('select discordId from users where discordId=? AND guildId=?', [discord_id, guild_id], (err, res) => {
                 if (err) return reject(err);
-                resolve(res as RowDataPacket[]); // Explicitly casting to RowDataPacket[]
+                resolve(res as RowDataPacket[]); // explicitly casting to RowDataPacket[]
             });
         });
 
+        var user = await this.GetGuildMemberById(discord_id);
         if (results.length === 0) {
             await new Promise<ResultSetHeader>(async (resolve, reject) => {
-                var user = await this.GetGuildMemberById(discord_id);
                 db.query('insert into users (discordId, guildId, avatar, name) values (?, ?, ?, ?)', [discord_id, guild_id, user.displayAvatarURL(), user.username], (err, res) => {
                     if (err) return reject(err);
-                    console.log(`[DB] ${discord_id} (guild_id ${guild_id}) is not registered in database, I'm adding it.`);
-                    resolve(res as ResultSetHeader); // Explicitly casting to OkPacket
+                    console.log(`[DB] ${discord_id} (guild_id ${guild_id}) added to tabel.`);
+                    resolve(res as ResultSetHeader); // explicitly casting to OkPacket
                 });
             });
         }
+        // else Database.instance.UpdateUserDetails(user);
     }
-    public async GetUser(discord_id: string, guild_id: string=process.env.DEBUG_GUILD_ID!): Promise<UserDb> {
-        await this.CreateUser(discord_id, guild_id);
+
+    public async GetUserData(discord_id: string, guild_id: string=process.env.DEBUG_GUILD_ID!): Promise<UserDb> {
+        // await this.SetupUser(discord_id, guild_id);
         
         try {
             var user = this.cache.users.find(d => discord_id === d.discordId);
@@ -222,7 +236,7 @@ export class Database {
                         }
                         else
                         {
-                            console.log('it s not created');
+                            console.log('[Db Cache] Can not find cache for user ' + discord_id);
                             resolve(null);
                             return null;
                         }

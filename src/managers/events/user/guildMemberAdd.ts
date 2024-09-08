@@ -11,6 +11,7 @@ client.on('guildMemberAdd', async(member: GuildMember) => {
 async function Wave(member: GuildMember)
 {
     console.log(`${member.user.username} has joined the server.`);
+    await Database.instance.SetupUser(member.user.id);
 
     const embed = new EmbedBuilder()
         .setTitle(`${WAVING_HAND} Welcome, ${member.user.username}!`)
@@ -21,7 +22,7 @@ async function Wave(member: GuildMember)
     ;
     (await GuildManager.instance.GetChannel(GuildManager.instance.guilds.find(g => g.guildId === member.guild.id).memberJoinChannel)).send({embeds: [embed]})
     
-    const data = await Database.instance.GetUser(member.user.id, member.guild.id);
+    const data = await Database.instance.GetUserData(member.user.id, member.guild.id);
     data.deleteTimestamp = 'null';
     await Database.instance.UpdateUser(data);
 }

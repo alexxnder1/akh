@@ -3,5 +3,5 @@ import { client } from "../../../main";
 import { GuildManager } from "../main";
 
 client.on(Events.GuildCreate, (guild: Guild) => {
-    GuildManager.instance.AddGuild(guild);
+    GuildManager.instance.SetupGuild(guild);
 });

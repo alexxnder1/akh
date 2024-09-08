@@ -31,8 +31,8 @@ CommandManager.instance.Register(new Command('coinflip', 'challenge someone and 
 
     // else if()
     else {
-        const userData = await Database.instance.GetUser(interaction.user.id);
-        const targetData = await Database.instance.GetUser(user.user.id);    
+        const userData = await Database.instance.GetUserData(interaction.user.id);
+        const targetData = await Database.instance.GetUserData(user.user.id);    
         // console.log(targetData.discordId );
             
         if(userData.coins < (money.value as number))
@@ -97,8 +97,8 @@ export async function OnCoinflipAccept(interaction: CommandInteraction, chal: Ch
             winner = chal.target;
             looser = chal.propose;
         }        
-        var winnerData = await Database.instance.GetUser(winner.id);
-        var looserData = await Database.instance.GetUser(looser.id);
+        var winnerData = await Database.instance.GetUserData(winner.id);
+        var looserData = await Database.instance.GetUserData(looser.id);
         winnerData.coins += chal.coins;
         looserData.coins -= chal.coins;
         winnerData.totalCoinflips++;

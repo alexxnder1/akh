@@ -5,7 +5,7 @@ import { Command } from "../../database/tabels/commands";
 import { CommandManager } from "../main";
 
 CommandManager.instance.Register(new Command('stats', 'See your statistics', async(interaction: CommandInteraction) => {
-    const data = await Database.instance.GetUser(interaction.user.id);
+    const data = await Database.instance.GetUserData(interaction.user.id);
     const embed = new EmbedBuilder()
         .setColor(0x0099FF)
         .setTitle('Your statistics')

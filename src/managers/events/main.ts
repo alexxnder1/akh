@@ -42,7 +42,7 @@ export class GuildManager {
         this.guilds.splice(this.guilds.indexOf(guild), 1);
     }
 
-    public async AddGuild(guild: Guild, newGuild: Guild=null):Promise<void> {
+    public async SetupGuild(guild: Guild, newGuild: Guild=null):Promise<void> {
         return new Promise<void>(async(resolve, reject) => {
             var guildResult: GuildDb;
             if(newGuild !== null) 
@@ -66,7 +66,7 @@ export class GuildManager {
             guild.members.cache.forEach((member) => {
                 // if not exists
                 if(!member.user.bot)
-                    Database.instance.CreateUser(member.user.id, guild.id);
+                    Database.instance.SetupUser(member.user.id, guild.id);
             });
             
             db.query('update guilds set ? where guildId=?', [{image: guildResult.image ? guildResult.image : DEFAULT_ICON_FOR_SERVER, ownerId: guildResult.ownerId, bannerURL: guildResult.bannerURL, name: guildResult.name, textChannels: JSON.stringify(guildResult.textChannels)},  guildResult.guildId], (err, res) =>{
@@ -113,42 +113,8 @@ export class GuildManager {
     }
 }
 
-client.on('ready', async() => {
-    try {
-        for(const guild of client.guilds.cache.values()) {
-            await GuildManager.instance.AddGuild(guild);
-            
-            const members = await guild.members.fetch();
-            members.forEach((member) => {
-                // if not exists
-                if(!member.user.bot)
-                    Database.instance.CreateUser(member.user.id, guild.id);
-            }); 
-        }
-        EventManager.instance.RegisterEmitter(Events.GuildManagerValidate);
-    } catch(err) {
-        console.error(err);
-    }
-    // for(const guild of guilds.values())
-
-    // guilds.forEach(async(guild) => {
-    // });
-
-    // db.query('select * from guilds', [], (err, res) => {
-    //     if(err)
-    //         console.error(err);
-
-    //     (res as Array<GuildDb>).forEach(async(g) => {
-    //         const guild = await client.guilds.fetch(g.guildId);
-    //         await GuildManager.instance.AddGuild(guild);
-    //     });
-       
-    // })
-    // console.log(GuildManager.instance.guilds);
-});
-
 import './user/guildMemberLeave';
-
+import './guild/ready';
 import './guild/checkDeletion'; 
 import'./guild/guildDelete';
 import './guild/guildUpdate';
