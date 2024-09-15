@@ -6,6 +6,7 @@ import { Database } from "../../database/manager";
 import { GetPercent } from "../../../utils/math";
 import { Challenge, ChallengeManager, EXPIRE_TIME, IsUserInChallenge, IsUserProvokedBy } from "../../challenges/main";
 import { Coinflip } from "../../challenges/coinflip";
+import { UserDb } from "../../database/tabels/users";
 
 CommandManager.instance.Register(new Command('coinflip', 'challenge someone and earn coins', async (interaction: CommandInteraction) => {
     var user = interaction.options.data.at(0);
@@ -31,8 +32,8 @@ CommandManager.instance.Register(new Command('coinflip', 'challenge someone and 
 
     // else if()
     else {
-        const userData = await Database.instance.GetUserData(interaction.user.id);
-        const targetData = await Database.instance.GetUserData(user.user.id);    
+        const userData = (await Database.instance.GetUserData(interaction.user.id, interaction.guild.id)) as UserDb;
+        const targetData = (await Database.instance.GetUserData(user.user.id, interaction.guild.id)) as UserDb;  
         // console.log(targetData.discordId );
             
         if(userData.coins < (money.value as number))
@@ -68,7 +69,7 @@ CommandManager.instance.Register(new Command('coinflip', 'challenge someone and 
             .setFooter({text: `Expires in ${EXPIRE_TIME/1000} seconds`})
 
         chal.message = await interaction.channel.send({embeds:[embed]});
-        await interaction.reply({content: `You provoked **${user.user.username}** to a coinflip challeange for a bet of **${chal.coins}**!`, ephemeral: true});
+        await interaction.reply({content: `You provoked **${user.user.displayName}** to a coinflip challeange for a bet of **${chal.coins}**!`, ephemeral: true});
     }
 
 }, [new Argument(ArgumentType.USER, "user", 'the user you want to get money from', true), new Argument(ArgumentType.INTEGER, "amount", 'amount of coins', true)]));
@@ -97,8 +98,8 @@ export async function OnCoinflipAccept(interaction: CommandInteraction, chal: Ch
             winner = chal.target;
             looser = chal.propose;
         }        
-        var winnerData = await Database.instance.GetUserData(winner.id);
-        var looserData = await Database.instance.GetUserData(looser.id);
+        var winnerData = (await Database.instance.GetUserData(winner.id, interaction.guild.id)) as UserDb;
+        var looserData = (await Database.instance.GetUserData(looser.id, interaction.guild.id)) as UserDb;
         winnerData.coins += chal.coins;
         looserData.coins -= chal.coins;
         winnerData.totalCoinflips++;
@@ -108,7 +109,7 @@ export async function OnCoinflipAccept(interaction: CommandInteraction, chal: Ch
 
         const summary = new EmbedBuilder()
             .setColor(0x0099FF)
-            .setTitle(`Coinflip between ${interaction.user.username} and ${chal.propose.username}`) 
+            .setTitle(`Coinflip between ${interaction.user.displayName} and ${chal.propose.displayName}`) 
             .addFields(
                 { name: '✔️ Winner (+' + chal.coins + ')', value: `${winner}`, inline:true },
                 { name: '❌ Looser (-' + chal.coins +')', value: `${looser}`, inline:true },

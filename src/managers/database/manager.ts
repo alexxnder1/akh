@@ -1,4 +1,4 @@
-import { DefaultWebSocketManagerOptions, Guild,  GuildMember, User, UserBannerFormat } from "discord.js";
+import { DefaultWebSocketManagerOptions, Guild,  GuildInviteManager,  GuildMember, User, UserBannerFormat } from "discord.js";
 import { client } from "../../main";
 import db from "./connection";
 import { UserDb } from "./tabels/users";
@@ -64,7 +64,7 @@ export class Database {
     }
 
     public async UpdateUserDetails(user: User) {
-        db.query(`update users set ? where discordId=?`, [{name: user.username, avatar: user.displayAvatarURL()}, user.id], (err, ) => {
+        db.query(`update users set ? where discordId=?`, [{name: user.displayName, avatar: user.displayAvatarURL()}, user.id], (err, ) => {
             if(err)
             {
                 console.error(err);
@@ -97,8 +97,8 @@ export class Database {
         }) 
    }
 
-    public async UpdateCacheFromDb(discordId: string) {
-        var userData: UserDb = await this.GetUserData(discordId);
+    public async UpdateCacheFromDb(discordId: string, guildId: string) {
+        var userData = (await this.GetUserData(discordId, guildId)) as UserDb;
         if(userData)
         {
             db.query('select * from users where discordId=?', [discordId], async(err, res) => {
@@ -144,14 +144,14 @@ export class Database {
 
     public async UpdateUser(user: UserDb) {
         delete user['id'];
-        db.query('update users set ? where discordId=?', [user, user.discordId], (err, res) => {
+        db.query('update users set ? where discordId=? and guildId=?', [user, user.discordId, user.guildId], (err, res) => {
             if(err)
             {
                 console.error(err);
                 return;
             }
 
-            console.log(`[Query] Updated ${user.discordId}'s properties.`);
+            console.log(`[Query] Updated ${user.discordId}'s properties for guildId ${user.guildId}.`);
         })
     }
 
@@ -200,7 +200,7 @@ export class Database {
         var user = await this.GetGuildMemberById(discord_id);
         if (results.length === 0) {
             await new Promise<ResultSetHeader>(async (resolve, reject) => {
-                db.query('insert into users (discordId, guildId, avatar, name) values (?, ?, ?, ?)', [discord_id, guild_id, user.displayAvatarURL(), user.username], (err, res) => {
+                db.query('insert into users (discordId, guildId, avatar, name) values (?, ?, ?, ?)', [discord_id, guild_id, user.displayAvatarURL(), user.displayName], (err, res) => {
                     if (err) return reject(err);
                     console.log(`[DB] ${discord_id} (guild_id ${guild_id}) added to tabel.`);
                     resolve(res as ResultSetHeader); // explicitly casting to OkPacket
@@ -210,29 +210,27 @@ export class Database {
         // else Database.instance.UpdateUserDetails(user);
     }
 
-    public async GetUserData(discord_id: string, guild_id: string=process.env.DEBUG_GUILD_ID!): Promise<UserDb> {
+    public async GetUserData(discord_id: string, guild_id: string=undefined): Promise<Array<UserDb> | UserDb> {
         // await this.SetupUser(discord_id, guild_id);
-        
+        console.log(discord_id);
         try {
-            var user = this.cache.users.find(d => discord_id === d.discordId);
-            if(user) {      
-                return user;
+            var users = this.cache.users.filter(d => (guild_id !== undefined ? d.guildId === guild_id : true) && discord_id === d.discordId);
+            if(users.length>0) {      
+                return users.length === 1 ? users.at(0) : users;
+
             } else {
-                
-                return new Promise<UserDb>(resolve => {
-                    db.query('select * from users where discordId=? and guildId=?', [discord_id, guild_id], (err, res) => {
+                return new Promise<Array<UserDb> | UserDb>(resolve => {
+                    db.query(`select * from users where discordId=? ` + (guild_id !== undefined ? `and guildId=?` : ''), [discord_id, guild_id !== undefined && guild_id], (err, res) => {
                         if(err)
                             throw err;
-                        
-                        if(res[0] !== undefined)
+                        console.log('result: ' + res);
+                        if(res !== undefined)
                         {
-                            var userDb = new UserDb();
-                            userDb = res[0] as UserDb;
+                            var results = res as Array<UserDb>;
                                                         
                             console.log(`[DB Cache] Cache created for user ${discord_id}.`);
-                            this.cache.users.push(userDb);
-                            resolve(userDb);       
-        
+                            this.cache.users.concat(results);
+                            resolve(results.length === 1 ? results.at(0) : results);       
                         }
                         else
                         {
@@ -240,7 +238,6 @@ export class Database {
                             resolve(null);
                             return null;
                         }
-    
                     })
                 });
             }

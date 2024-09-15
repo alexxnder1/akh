@@ -11,11 +11,11 @@ CommandManager.instance.Register(new Command('avatar', 'Show avatar for users', 
     else user = interaction.options.data.at(0).user;
 
     const embed = new EmbedBuilder()
-        .setTitle(`${user.username}'s avatar`)
+        .setTitle(`${user.displayName}'s avatar`)
         .setDescription(user.id === interaction.user.id || user.id === client.user.id ? 'What a nice avatar!': '')
         .setImage(user.displayAvatarURL())
         .setTimestamp()
-        // .setFooter({ text: `Requested by ${interaction.user.username}`, iconURL: interaction.user.displayAvatarURL({size: 2048}) })
+        // .setFooter({ text: `Requested by ${interaction.user.displayName}`, iconURL: interaction.user.displayAvatarURL({size: 2048}) })
     await interaction.reply({embeds: [embed]});
 
 }, [new Argument(ArgumentType.MENTIONABLE, 'user', 'the user you want to view avatar')]))

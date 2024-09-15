@@ -8,7 +8,8 @@ export class UserDb {
     public discordId: string; 
     public avatar: string;
     public name: string;  
-     
+    public guildId: string; 
+
     // when user leaves guild this thing has a value
     public deleteTimestamp: string | 'null';
 }

@@ -78,7 +78,7 @@ export function GetWinPattern(tabel: string[][], type: TTTType): boolean {
 export function CheckDraw(tabel: string[][]): boolean {
     for(let i =0; i < 3; i++)
     {
-        for(let j = 0; j< 3; j++)
+        for(let j = 0; j < 3; j++)
         {
             if(tabel[i][j] === "-2")
                return false;

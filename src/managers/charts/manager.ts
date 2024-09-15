@@ -44,7 +44,7 @@ export class ChartManager {
     
         res.map((val: GuildMember) => {
             // if(val)
-            users.push(val.user.username);
+            users.push(val.user.displayName);
         })
 
         chart.names = users;

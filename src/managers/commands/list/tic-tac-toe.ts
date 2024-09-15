@@ -5,6 +5,7 @@ import { ChallengeManager, CountChallangesOfType as CountChallengesOfType, Delet
 import { Database } from "../../database/manager";
 import { client } from "../../../main";
 import { GetWinPattern, CheckDraw,TicTacToe } from "../../challenges/tic-tac-toe";
+import { UserDb } from "../../database/tabels/users";
 
 CommandManager.instance.Register(new Command('tictactoe', 'Play tic-tac-toe with your friens/bot', async (interaction: CommandInteraction) => {
   
@@ -26,8 +27,8 @@ CommandManager.instance.Register(new Command('tictactoe', 'Play tic-tac-toe with
     if(IsUserProvokedBy(user.id, interaction.user.id, interaction.guild.id, TicTacToe))
         return interaction.reply({content: 'You cannot provoke that user multiple times.', ephemeral: true});
 
-    var userData = await Database.instance.GetUserData(interaction.user.id);
-    var targetData = await Database.instance.GetUserData(user.id);
+    var userData = (await Database.instance.GetUserData(interaction.user.id, interaction.guild.id)) as UserDb;
+    var targetData = (await Database.instance.GetUserData(user.id, interaction.guild.id)) as UserDb;
     
     if(bet < 0 || bet > userData.coins)
         return interaction.reply({content: 'Insufficient funds.', ephemeral: true});
@@ -159,8 +160,8 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
         var winner: User = GetWinPattern(challenge.tabel, 'X') ? challenge.xUser : challenge.zeroUser; 
         interaction.reply(`🎉 Kaboom! We have a winner: ${winner} (**+${challenge.coins}** coins).`)
     
-        var userData = await Database.instance.GetUserData(challenge.propose.id);
-        var targetData = await Database.instance.GetUserData(challenge.target.id);
+        var userData = (await Database.instance.GetUserData(challenge.propose.id, interaction.guild.id)) as UserDb
+        var targetData = (await Database.instance.GetUserData(challenge.target.id, interaction.guild.id)) as UserDb
         if(userData.coins < challenge.coins)
             interaction.reply(`${challenge.propose} doesn t have that amount of coins but still it will be charged.`);
         
