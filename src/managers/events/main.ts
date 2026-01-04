@@ -45,6 +45,8 @@ export class GuildManager {
     public async SetupGuild(guild: Guild, newGuild: Guild=null):Promise<void> {
         return new Promise<void>(async(resolve, reject) => {
             var guildResult: GuildDb;
+
+            // in case of updating some props of it
             if(newGuild !== null) 
             {
                 guildResult = GuildManager.instance.guilds.find(g => g.guildId===newGuild.id);               

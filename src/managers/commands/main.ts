@@ -29,18 +29,21 @@ export class CommandManager {
             // console.log('Started refreshing application (/) commands.');
             var files = fs.readdirSync('src/managers/commands/list');
 
+            var cmds : number = 0;
             const importPromises = files.map(file => {
+                cmds++;
                 return import('./list/' + file.split('.ts')[0]);
             });
+            console.log(`[CMD] Loaded ${cmds} commands.`);
 
             await Promise.all(importPromises);
             await rest.put(Routes.applicationGuildCommands(process.env.CLIENT_ID!, process.env.GUILD_ID!), { body: this.commands.map(({execute,...rest}) => rest)});
             
-            CommandManager.instance.commands.forEach(cmd => {
-                client.on('interactionCreate', (interaction: Interaction) => {
-                    if(interaction.isCommand())
-                        if(interaction.commandName === cmd.name)
-                            cmd.execute(interaction as CommandInteraction);
+            client.on('interactionCreate', (interaction: Interaction) => {
+                    CommandManager.instance.commands.forEach(cmd => {
+                        if(interaction.isCommand())
+                            if(interaction.commandName === cmd.name)
+                                cmd.execute(interaction as CommandInteraction);
                 });
             });    
             db.query('delete from commands', (err, _) => {

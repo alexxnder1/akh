@@ -52,6 +52,7 @@ export class ImageQueryManager {
         if(query.message)
             await query.message.delete();
 
+        // console.log("deleted message");
         clearTimeout(query.timeout);
         this.queries.splice(this.queries.indexOf(query), 1);
     }

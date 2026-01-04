@@ -1,0 +1,51 @@
+CREATE DATABASE akh;
+USE akh;
+
+-- Now create your tables
+CREATE TABLE logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    type VARCHAR(50) NOT NULL,
+    content TEXT NOT NULL,
+    channelId VARCHAR(20) NOT NULL,
+    guildId VARCHAR(20) NOT NULL,
+    authorId VARCHAR(20) NOT NULL,
+    createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE user_charts (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    names JSON NOT NULL,
+    date DATE NOT NULL,
+    guildId VARCHAR(20) NOT NULL
+);
+
+CREATE TABLE users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    discordId VARCHAR(20) NOT NULL,
+    guildId VARCHAR(20) NOT NULL,
+    name VARCHAR(100),
+    avatar VARCHAR(255),
+    coins BIGINT DEFAULT 0,
+    level INT DEFAULT 1,
+    xp BIGINT DEFAULT 0,
+    joinDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE(discordId, guildId)
+);
+
+CREATE TABLE guilds (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    guildId VARCHAR(20) NOT NULL UNIQUE,
+    ownerId VARCHAR(20) NOT NULL,
+    image VARCHAR(255),
+    name VARCHAR(100),
+    textChannels JSON,
+    joinDate TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    bannerURL VARCHAR(255)
+);
+
+CREATE TABLE commands (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL UNIQUE,
+    description TEXT,
+    options JSON
+);
